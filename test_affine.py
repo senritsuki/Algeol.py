@@ -7,7 +7,8 @@ def test_translate1():
     faces = al.octahedron_faces()
     name = 'obj/affine_translate1'
     affines = [al.translate((x, 0, 0)) for x in range(5)]
-    al.save_obj_affines(verts, faces, name, affines)
+    f = al.save_obj_affines(verts, faces, name, affines)
+    print('save: ' + f)
 
 def test_translate2():
     verts = al.octahedron_verts()
@@ -15,7 +16,8 @@ def test_translate2():
     name = 'obj/affine_translate2'
     affines = [[al.translate((x, y, 0)) for y in range(6)] for x in range(5)]
     affines = np.array(affines).reshape((-1, 4, 4))
-    al.save_obj_affines(verts, faces, name, affines)
+    f = al.save_obj_affines(verts, faces, name, affines)
+    print('save: ' + f)
 
 def test_affines():
     verts = al.prism3_verts()
@@ -31,7 +33,8 @@ def test_affines():
         mx = np.dot(translate, mx)
         affines.append(mx)
         x += 1
-    al.save_obj_affines(verts, faces, name, affines)
+    f = al.save_obj_affines(verts, faces, name, affines)
+    print('save: ' + f)
 
 
 def main(argv):

@@ -2,34 +2,45 @@ import sys
 import algeol as al
 
 def test_plane4():
-    verts = al.plane4_verts()
-    faces = al.plane4_faces()
+    verts, faces = al.plane4()
     name = 'obj/plane4'
-    al.save_obj_1(verts, faces, name)
+    f = al.save_obj(verts, faces, name)
+    print('save: ' + f)
+
+def test_tetrahedron():
+    verts = al.cube_verts()
+    faces = al.cube_faces()
+    name = 'obj/cube'
+    f = al.save_obj(verts, faces, name)
+    print('save: ' + f)
 
 def test_cube():
     verts = al.cube_verts()
     faces = al.cube_faces()
     name = 'obj/cube'
-    al.save_obj_1(verts, faces, name)
+    f = al.save_obj(verts, faces, name)
+    print('save: ' + f)
 
 def test_octahedron():
     verts = al.octahedron_verts()
     faces = al.octahedron_faces()
     name = 'obj/octahedron'
-    al.save_obj_1(verts, faces, name)
+    f = al.save_obj(verts, faces, name)
+    print('save: ' + f)
 
 def test_prism3():
     verts = al.prism3_verts()
     faces = al.prism3_faces()
     name = 'obj/prism3'
-    al.save_obj_1(verts, faces, name)
+    f = al.save_obj(verts, faces, name)
+    print('save: ' + f)
 
 def test_pyramid4():
     verts = al.pyramid4_verts()
     faces = al.pyramid4_faces()
     name = 'obj/pyramid4'
-    al.save_obj_1(verts, faces, name)
+    f = al.save_obj(verts, faces, name)
+    print('save: ' + f)
 
 def main(argv):
     if len(argv) < 2:
