@@ -22,17 +22,34 @@ def plane4_faces():
         (0, 1, 2, 3),  # 上
     ))
 
+def quarter_arc_points(n):
+    c = lambda i: np.cos(i / n * PI05)
+    s = lambda i: np.sin(i / n * PI05)
+    return np.array([(c(i), s(i), 0, 1) for i in range(n+1)])
+
 # 1/4パイ
 # n: 円弧を近似する辺の数
 def quarter_pie(n):
     return quarter_pie_verts(n), quarter_pie_faces(n)
 
 def quarter_pie_verts(n):
-    c = lambda i: np.cos(i / n * PI05)
-    s = lambda i: np.sin(i / n * PI05)
-    return np.array([(0, 0, 0, 1)] + [(c(i), s(i), 0, 1) for i in range(n+1)])
+    verts = np.array([(0, 0, 0, 1)] + list(quarter_arc_points(n)))
+    verts = transform(translate((-0.5, -0.5, 0)), verts)
+    return verts
 
 def quarter_pie_faces(n):
+    return np.array([(0, i+1, i+2) for i in range(n)])
+
+
+def quarter_pie2(n):
+    return quarter_pie2_verts(n), quarter_pie2_faces(n)
+
+def quarter_pie2_verts(n):
+    verts = np.array([(1, 1, 0, 1)] + list(quarter_arc_points(n)))
+    verts = transform(translate((-0.5, -0.5, 0)), verts)
+    return verts
+
+def quarter_pie2_faces(n):
     return np.array([(0, i+1, i+2) for i in range(n)])
 
 
@@ -50,10 +67,10 @@ def tetrahedron_verts():
     tc = np.cos(trad)
     ts = np.sin(trad)
     return np.array((
-        (0, 0, r),  # 上
-        (r * ts, 0, r * tc),  # 下 右
-        (r * ts * deg120_c, r * ts * deg120_s, r * tc),  # 下 左奥
-        (r * ts * deg240_c, r * ts * deg240_s, r * tc),  # 下 左前
+        (0, 0, r, 1),  # 上
+        (r * ts, 0, r * tc, 1),  # 下 右
+        (r * ts * deg120_c, r * ts * deg120_s, r * tc, 1),  # 下 左奥
+        (r * ts * deg240_c, r * ts * deg240_s, r * tc, 1),  # 下 左前
     ))
 
 def tetrahedron_faces():
@@ -119,18 +136,18 @@ def octahedron_faces():
 # 原点を含みxy平面・yz平面・zx平面に平行で合同な長方形3枚
 def trirect_verts(a, b):
     return np.array((
-        ( a,  b,  0),
-        (-a,  b,  0),
-        (-a, -b,  0),
-        ( a, -b,  0),
-        ( 0,  a,  b),
-        ( 0, -a,  b),
-        ( 0, -a, -b),
-        ( 0,  a, -b),
-        ( b,  0,  a),
-        ( b,  0, -a),
-        (-b,  0, -a),
-        (-b,  0,  a),
+        ( a,  b,  0, 1),
+        (-a,  b,  0, 1),
+        (-a, -b,  0, 1),
+        ( a, -b,  0, 1),
+        ( 0,  a,  b, 1),
+        ( 0, -a,  b, 1),
+        ( 0, -a, -b, 1),
+        ( 0,  a, -b, 1),
+        ( b,  0,  a, 1),
+        ( b,  0, -a, 1),
+        (-b,  0, -a, 1),
+        (-b,  0,  a, 1),
     ))
 
 # Dodecahedron - 正12面体
@@ -246,8 +263,8 @@ def quarter_cylinder(n):
 
 def quarter_cylinder_verts(n):
     pie = quarter_pie_verts(n)
-    pie1 = pie + (0, 0, 0.5, 0)
-    pie2 = np.dot(reverse_xy(), pie1) + (0, 0, -0.5, 0)
+    pie1 = transform(translate((0, 0, -0.5)), pie)
+    pie2 = transform(np.dot(translate((0, 0, 0.5)), reverse_xy()), pie)
     return np.array(list(pie1) + list(pie2))
 
 def quarter_cylinder_faces(n):
@@ -255,8 +272,21 @@ def quarter_cylinder_faces(n):
     faces_pie = quarter_pie_faces(n)
     faces_pie1 = list(faces_pie)
     faces_pie2 = list(faces_pie + N)
-    faces_side = [(i+2, i+1, N+i+1, N+i+2) for i in range(n)]
-    return np.array(faces_pie1 + faces_pie2 + faces_side)
+    faces_side = [(0, 1, 2*N-1, N), (N, N+1, N-1, 0)]
+    faces_side_arc = [(i+2, i+1, 2*N-(i+1), 2*N-(i+2)) for i in range(n)]
+    return np.array(faces_pie1 + faces_pie2 + faces_side + faces_side_arc)
+
+def quarter_cylinder2(n):
+    return quarter_cylinder2_verts(n), quarter_cylinder2_faces(n)
+
+def quarter_cylinder2_verts(n):
+    pie = quarter_pie2_verts(n)
+    pie1 = transform(translate((0, 0, 0.5)), pie)
+    pie2 = transform(np.dot(translate((0, 0, -0.5)), reverse_xy()), pie)
+    return np.array(list(pie1) + list(pie2))
+
+def quarter_cylinder2_faces(n):
+    return quarter_cylinder_faces(n)
 
 # 四角錐
 def pyramid4():
@@ -280,3 +310,47 @@ def pyramid4_faces():
         (3, 0, 4),  # 右
     ))
 
+def concaved_cube(d):
+    return concaved_cube_verts(d), concaved_cube_faces()
+
+def concaved_cube_verts(d):
+    return np.array([
+        ( 0.5,  0.5, -0.5, 1),  # 下 右奥
+        (-0.5,  0.5, -0.5, 1),  # 下 左奥
+        (-0.5, -0.5, -0.5, 1),  # 下 左前
+        ( 0.5, -0.5, -0.5, 1),  # 下 右前
+        ( 0.5,  0.5,  0.5, 1),  # 上 右奥
+        (-0.5,  0.5,  0.5, 1),  # 上 左奥
+        (-0.5, -0.5,  0.5, 1),  # 上 左前
+        ( 0.5, -0.5,  0.5, 1),  # 上 右前
+        ( 0    ,  0.5-d,  0    , 1),  # 奥
+        (-0.5+d,  0    ,  0    , 1),  # 左
+        ( 0    , -0.5+d,  0    , 1),  # 前
+        ( 0.5-d,  0    ,  0    , 1),  # 右
+        ( 0    ,  0    , -0.5+d, 1),  # 下
+        ( 0    ,  0    ,  0.5-d, 1),  # 上
+    ])
+
+def concaved_cube_faces():
+    faces = []
+    for i in range(4):
+        j = (i+1) % 4
+        faces += [
+            (i  , j  , 8+i),
+            (j  , j+4, 8+i),
+            (j+4, i+4, 8+i),
+            (i+4, i  , 8+i),
+        ]
+    faces += [
+        (0, 3, 12),
+        (3, 2, 12),
+        (2, 1, 12),
+        (1, 0, 12),
+    ]
+    faces += [
+        (4, 5, 13),
+        (5, 6, 13),
+        (6, 7, 13),
+        (7, 4, 13),
+    ]
+    return np.array(faces)
