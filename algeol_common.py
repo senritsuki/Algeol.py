@@ -17,8 +17,26 @@ sind = lambda deg: np.sin(deg2rad(deg))
 rad2cs = lambda rad: (np.cos(rad), np.sin(rad))
 deg2cs = lambda deg: rad2cs(deg2rad(deg))
 
+class Node:
+    # vf: (verts, faces)
+    # edges: Edge[]
+    def __init__(self, vf=None, edges=[]):
+        self.vf = vf
+        self.edges = edges
 
-def rot_x(rad):
+class Edge:
+    def __init__(self, dstNode, affine=None, material=None):
+        self.dstNode = dstNode
+        self.affine = affine
+        self.material = material
+
+class Material:
+    def __init__(self, name: str, rgb: list):
+        self.name = name
+        self.rgb = rgb
+
+# x軸回転行列
+def rotate_x(rad):
     c, s = rad2cs(rad)
     return np.array((
         ( 1,  0,  0,  0),
@@ -27,7 +45,8 @@ def rot_x(rad):
         ( 0,  0,  0,  1),
     ))
 
-def rot_y(rad):
+# y軸回転行列
+def rotate_y(rad):
     c, s = rad2cs(rad)
     return np.array((
         ( c,  0,  s,  0),
@@ -36,7 +55,8 @@ def rot_y(rad):
         ( 0,  0,  0,  1),
     ))
 
-def rot_z(rad):
+# z軸回転行列
+def rotate_z(rad):
     c, s = rad2cs(rad)
     return np.array((
         ( c, -s,  0,  0),
@@ -45,6 +65,7 @@ def rot_z(rad):
         ( 0,  0,  0,  1),
     ))
 
+# 併進行列
 def translate(v):
     return np.array((
         (1, 0, 0, v[0]),
@@ -53,6 +74,7 @@ def translate(v):
         (0, 0, 0,    1),
     ))
 
+# 拡大縮小行列
 def scale(v):
     return np.array((
         (v[0],    0,    0, 0),
@@ -61,7 +83,15 @@ def scale(v):
         (   0,    0,    0, 1),
     ))
 
-def reverse_xy():
+def refrection_xz_plane():
+    return np.array((
+        (1, 0, 0, 0),
+        (0,-1, 0, 0),
+        (0, 0, 1, 0),
+        (0, 0, 0, 1),
+    ))
+
+def refrection_x_eq_y_plane():
     return np.array((
         (0, 1, 0, 0),
         (1, 0, 0, 0),
@@ -69,8 +99,13 @@ def reverse_xy():
         (0, 0, 0, 1),
     ))
 
-
-rot_x4 = [
+unit = np.array((
+    (1, 0, 0, 0),
+    (0, 1, 0, 0),
+    (0, 0, 1, 0),
+    (0, 0, 0, 1),
+))
+rotate_x90d = [
     np.array((
         ( 1,  0,  0,  0),
         ( 0,  1,  0,  0),
@@ -96,7 +131,7 @@ rot_x4 = [
         ( 0,  0,  0,  1),
     )),
 ]
-rot_y4 = [
+rotate_y90d = [
     np.array((
         ( 1,  0,  0,  0),
         ( 0,  1,  0,  0),
@@ -122,7 +157,7 @@ rot_y4 = [
         ( 0,  0,  0,  1),
     )),
 ]
-rot_z4 = [
+rotate_z90d = [
     np.array((
         ( 1,  0,  0,  0),
         ( 0,  1,  0,  0),
@@ -151,3 +186,24 @@ rot_z4 = [
 
 def transform(affine, verts):
     return np.dot(affine, verts.transpose()).transpose()
+
+def dotall(affines):
+    d = affines[0]
+    for a in affines[1:]:
+        d = np.dot(d, a)
+    return d
+
+def faces_to_edges(faces):
+    edges = []
+    s = set()
+    for f in faces:
+        fl = len(faces)
+        for i1 in range(fl):
+            i2 = f[(i1+1) % fl]
+            i12 = (i1, i2) if i1 <= i2 else (i2, i1)
+            key = '%d %d' % i12
+            if key not in s:
+                s.add(key)
+                edges.append(i12)
+    return edges
+

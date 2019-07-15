@@ -6,10 +6,10 @@ from algeol_common import *
 # - 頭方向 = z軸正方向
 
 # 平面
-def plane4():
-    return plane4_verts(), plane4_faces()
+def square():
+    return square_verts(), square_faces()
 
-def plane4_verts():
+def square_verts():
     return np.array((
         ( 0.5,  0.5, 0, 1),  # 右奥
         (-0.5,  0.5, 0, 1),  # 左奥
@@ -17,10 +17,23 @@ def plane4_verts():
         ( 0.5, -0.5, 0, 1),  # 右前
     ))
 
-def plane4_faces():
-    return np.array((
+def square_faces():
+    return [
         (0, 1, 2, 3),  # 上
-    ))
+    ]
+
+# n角の正多角形
+def regular_polygon(n):
+    return regular_polygon_verts(n), regular_polygon_faces(n)
+
+def regular_polygon_verts(n):
+    c = lambda i: np.cos(i / n * PI2) * 0.5
+    s = lambda i: np.sin(i / n * PI2) * 0.5
+    return np.array([(c(i), s(i), 0, 1) for i in range(n)])
+
+def regular_polygon_faces(n):
+    return [[i for i in range(n)]]
+
 
 def quarter_arc_points(n):
     c = lambda i: np.cos(i / n * PI05)
@@ -33,25 +46,29 @@ def quarter_pie(n):
     return quarter_pie_verts(n), quarter_pie_faces(n)
 
 def quarter_pie_verts(n):
-    verts = np.array([(0, 0, 0, 1)] + list(quarter_arc_points(n)))
+    arc = list(quarter_arc_points(n))
+    verts = np.array([(0, 0, 0, 1)] + arc)
     verts = transform(translate((-0.5, -0.5, 0)), verts)
     return verts
 
 def quarter_pie_faces(n):
-    return np.array([(0, i+1, i+2) for i in range(n)])
+    return [(0, i+1, i+2) for i in range(n)]
 
+# Isosceles Right Triangle - 直角二等辺三角形
+def isosceles_right_triangle():
+    return quarter_pie(1)
 
-def quarter_pie2(n):
-    return quarter_pie2_verts(n), quarter_pie2_faces(n)
+# 正方形 と 1/4パイ の差集合
+# n: 円弧を近似する辺の数
+def quarter_pie_complement(n):
+    return quarter_pie_complement_verts(n), quarter_pie_faces(n)
 
-def quarter_pie2_verts(n):
-    verts = np.array([(1, 1, 0, 1)] + list(quarter_arc_points(n)))
+def quarter_pie_complement_verts(n):
+    arc = list(quarter_arc_points(n))
+    arc.reverse()
+    verts = np.array([(1, 1, 0, 1)] + arc)
     verts = transform(translate((-0.5, -0.5, 0)), verts)
     return verts
-
-def quarter_pie2_faces(n):
-    return np.array([(0, i+1, i+2) for i in range(n)])
-
 
 # Regular Tetrahedron - 正4面体
 def tetrahedron():
@@ -74,12 +91,12 @@ def tetrahedron_verts():
     ))
 
 def tetrahedron_faces():
-    return np.array((
+    return [
         (0, 1, 2),  # 上 右奥
         (0, 2, 3),  # 上 左
         (0, 3, 1),  # 上 右前
         (3, 2, 1),  # 下
-    ))
+    ]
 
 # Regular Hexahedron, Cube - 正6面体・立方体
 def cube():
@@ -98,14 +115,14 @@ def cube_verts():
     ))
 
 def cube_faces():
-    return np.array((
+    return [
         (0, 1, 2, 3),  # 上
         (7, 6, 5, 4),  # 下
         (4, 5, 1, 0),  # 奥
         (5, 6, 2, 1),  # 左
         (6, 7, 3, 2),  # 前
         (7, 4, 0, 3),  # 右
-    ))
+    ]
 
 # Regular Octahedron - 正8面体
 def octahedron():
@@ -122,7 +139,7 @@ def octahedron_verts():
     ))
 
 def octahedron_faces():
-    return np.array((
+    return [
         (1, 2, 0),  # 上 右奥
         (2, 3, 0),  # 上 左奥
         (3, 4, 0),  # 上 左前
@@ -131,7 +148,7 @@ def octahedron_faces():
         (4, 3, 5),  # 下 左前
         (3, 2, 5),  # 下 左奥
         (2, 1, 5),  # 下 右奥
-    ))
+    ]
 
 # 原点を含みxy平面・yz平面・zx平面に平行で合同な長方形3枚
 def trirect_verts(a, b):
@@ -165,7 +182,7 @@ def dodecahedron_verts():
 
 def rot_dodecahedron():
     rad_rot_y_to_z = PI05 - np.arctan2(PHI * PHI, 1)
-    affine = rot_y(rad_rot_y_to_z)
+    affine = rotate_y(rad_rot_y_to_z)
     return affine
 
 def dodecahedron_faces():
@@ -174,7 +191,7 @@ def dodecahedron_faces():
     zx = [i for i in range(8, 12)]
     ct = [i for i in range(12, 16)]
     cb = [i for i in range(16, 20)]
-    return np.array((
+    return [
         (xy[0], ct[0], zx[0], ct[3], xy[3]),  # 上 右
         (xy[3], cb[3], zx[1], cb[0], xy[0]),  # 下 右
         (xy[2], ct[2], zx[3], ct[1], xy[1]),  # 上 左
@@ -187,7 +204,7 @@ def dodecahedron_faces():
         (zx[0], ct[0], yz[0], ct[1], zx[3]),  # 上 奥
         (zx[1], cb[3], yz[2], cb[2], zx[2]),  # 下 前
         (zx[2], cb[1], yz[3], cb[0], zx[1]),  # 下 奥
-    ))
+    ]
 
 # Icosahedron - 正20面体
 def icosahedron():
@@ -202,14 +219,14 @@ def icosahedron_verts():
 
 def rot_icosahedron():
     rad_rot_y_to_z = PI05 - np.arctan2(PHI, 1)
-    affine = rot_y(rad_rot_y_to_z)
+    affine = rotate_y(rad_rot_y_to_z)
     return affine
 
 def icosahedron_faces():
     xy = [i for i in range(0, 4)]
     yz = [i for i in range(4, 8)]
     zx = [i for i in range(8, 12)]
-    return np.array((
+    return [
         (xy[0], zx[0], xy[3]),  # 上 右
         (xy[3], zx[1], xy[0]),  # 下 右
         (xy[2], zx[3], xy[1]),  # 上 左
@@ -230,69 +247,96 @@ def icosahedron_faces():
         (zx[3], yz[0], xy[1]),  # 中上 左奥
         (zx[2], yz[2], xy[2]),  # 中下 左前
         (zx[2], xy[1], yz[3]),  # 中下 左奥
-    ))
+    ]
 
+def icosphere(recurse):
+    verts, faces = icosahedron()
+    return _icosphere_recurse(verts, faces, recurse)
 
-# 三角柱
-def prism3():
-    return prism3_verts(), prism3_faces()
+def _icosphere_recurse(verts, faces, recurse):
+    if recurse <= 0:
+        return np.array(verts), np.array(faces)
+    keymap = dict()
+    verts = list(verts)
+    subverts = []
+    subfaces = []
+    loop = ((0, 1), (1, 2), (2, 0))
+    for face in faces:
+        vvi = [(verts[i], i) for i in face]
+        mvi = [_icosphere_mid(keymap, face[ii[0]], face[ii[1]], verts, subverts) for ii in loop]
+        ff = [[vvi[ii[1]], mvi[ii[1]], mvi[ii[0]]] for ii in loop]
+        ff.append([mvi[0], mvi[1], mvi[2]])
+        ff = [[vi[1] for vi in f] for f in ff]
+        subfaces.extend(ff)
+    return _icosphere_recurse(verts + subverts, subfaces, recurse - 1)
 
-def prism3_verts():
-    return np.array((
-        (-0.5,  0.5, -0.5, 1),  # 上 左奥
-        (-0.5, -0.5, -0.5, 1),  # 上 左前
-        ( 0.5, -0.5, -0.5, 1),  # 上 右前
-        (-0.5,  0.5,  0.5, 1),  # 下 左奥
-        (-0.5, -0.5,  0.5, 1),  # 下 左前
-        ( 0.5, -0.5,  0.5, 1),  # 下 右前
-    ))
+def _icosphere_key(i1, i2):
+    return '%d %d' % (i1, i2) if i1 <= i2 else '%d %d' % (i2, i1)
 
-def prism3_faces():
-    return np.array((
-        (0, 1, 2),  # 上
-        (5, 4, 3),  # 下
-        (0, 1, 4, 3),  # 左
-        (1, 2, 5, 4),  # 前
-        (2, 0, 3, 5),  # 右奥
-    ))
+def _icosphere_mid(keymap, i1, i2, verts, subverts):
+    key = _icosphere_key(i1, i2)
+    if key in keymap:
+        return keymap[key]
+    i = len(verts) + len(subverts)
+    v = (verts[i1] + verts[i2]) * 0.5
+    v3 = v[:3] * 0.5 * (1 / np.linalg.norm(v[:3]))
+    v = np.array(list(v3) + [1])
+    keymap[key] = (v, i)
+    subverts.append(v)
+    return (v, i)
+
+# 角柱
+def prism(polygon_verts, polygon_faces, fn_refrection=None):
+    return prism_verts(polygon_verts), prism_faces(polygon_verts, polygon_faces)
+
+def prism_verts(polygon_verts, fn_refrection=None):
+    affine1 = translate((0, 0, -0.5))
+    affine2 = translate((0, 0,  0.5))
+    if fn_refrection is not None:
+        affine1 = np.dot(affine1, fn_refrection())
+    polygon1 = transform(affine1, polygon_verts)
+    polygon2 = transform(affine2, polygon_verts)
+    return np.array(list(polygon1) + list(polygon2))
+
+def prism_faces(polygon_verts, polygon_faces, fn_refrection=None):
+    N = len(polygon_verts)
+    faces1 = list(polygon_faces)
+    faces2 = list(polygon_faces + N)
+    faces_side = []
+    for i in range(N):
+        j = (i + 1) % N
+        if fn_refrection is not None:
+            face = [i, i+N, j+N, j]
+        else:
+            face = [i, j, j+N, i+N]
+        faces_side.append(face)
+    return faces1 + faces2 + faces_side
+
+#
+def regular_prism(n):
+    verts, faces = regular_polygon(n)
+    return prism(verts, faces, refrection_xz_plane)
+
+# 直角二等辺三角形の三角柱
+def isosceles_right_triangular_prism():
+    verts, faces = isosceles_right_triangle()
+    return prism(verts, faces, refrection_x_eq_y_plane)
 
 # 1/4円柱
 # n: 円弧を近似する辺の数
 def quarter_cylinder(n):
-    return quarter_cylinder_verts(n), quarter_cylinder_faces(n)
+    verts, faces = quarter_pie(n)
+    return prism(verts, faces, refrection_x_eq_y_plane)
 
-def quarter_cylinder_verts(n):
-    pie = quarter_pie_verts(n)
-    pie1 = transform(translate((0, 0, -0.5)), pie)
-    pie2 = transform(np.dot(translate((0, 0, 0.5)), reverse_xy()), pie)
-    return np.array(list(pie1) + list(pie2))
-
-def quarter_cylinder_faces(n):
-    N = n + 2
-    faces_pie = quarter_pie_faces(n)
-    faces_pie1 = list(faces_pie)
-    faces_pie2 = list(faces_pie + N)
-    faces_side = [(0, 1, 2*N-1, N), (N, N+1, N-1, 0)]
-    faces_side_arc = [(i+2, i+1, 2*N-(i+1), 2*N-(i+2)) for i in range(n)]
-    return np.array(faces_pie1 + faces_pie2 + faces_side + faces_side_arc)
-
-def quarter_cylinder2(n):
-    return quarter_cylinder2_verts(n), quarter_cylinder2_faces(n)
-
-def quarter_cylinder2_verts(n):
-    pie = quarter_pie2_verts(n)
-    pie1 = transform(translate((0, 0, 0.5)), pie)
-    pie2 = transform(np.dot(translate((0, 0, -0.5)), reverse_xy()), pie)
-    return np.array(list(pie1) + list(pie2))
-
-def quarter_cylinder2_faces(n):
-    return quarter_cylinder_faces(n)
+def quarter_cylinder_complement(n):
+    verts, faces = quarter_pie_complement(n)
+    return prism(verts, faces, refrection_x_eq_y_plane)
 
 # 四角錐
-def pyramid4():
-    return pyramid4_verts(), pyramid4_faces()
+def square_pyramid():
+    return square_pyramid_verts(), square_pyramid_faces()
 
-def pyramid4_verts():
+def square_pyramid_verts():
     return np.array((
         ( 0.5,  0.5, -0.5, 1),  # 下 右奥
         (-0.5,  0.5, -0.5, 1),  # 下 左奥
@@ -301,14 +345,47 @@ def pyramid4_verts():
         ( 0. ,  0. ,  0.5, 1),  # 上
     ))
 
-def pyramid4_faces():
-    return np.array((
+def square_pyramid_faces():
+    return [
         (3, 2, 1, 0),  # 下
         (0, 1, 4),  # 奥
         (1, 2, 4),  # 左
         (2, 3, 4),  # 前
         (3, 0, 4),  # 右
-    ))
+    ]
+
+# トーラス
+# r: 空洞径 0.0 ～ 1.0
+def torus(r, n1, n2):
+    return torus_verts(r, n1, n2), torus_faces(n1, n2)
+
+def torus_verts(r, n1, n2):
+    v1 = []
+    d = (1 - r) / 4     # r=0.500のとき、輪の半径は0.125
+    for i in range(n1):
+        rad = PI2 * i / n1
+        x = d * np.cos(rad) + (r / 2) + d
+        z = d * np.sin(rad)
+        v1.append((x, 0, z, 1))
+    v2 = []
+    for i in range(n2):
+        rad = PI2 * i / n2
+        rot = rotate_z(rad)
+        for v in v1:
+            v = np.dot(rot, v)
+            v2.append(v)
+    return np.array(v2)
+
+def torus_faces(n1, n2):
+    f = []
+    for i in range(n2):
+        i2 = (i+1) % n2
+        k = i * n1
+        k2 = i2 * n1
+        for j in range(n1):
+            j2 = (j+1) % n1
+            f.append((k + j, k2 + j, k2 + j2, k + j2))
+    return f
 
 def concaved_cube(d):
     return concaved_cube_verts(d), concaved_cube_faces()
@@ -353,4 +430,4 @@ def concaved_cube_faces():
         (6, 7, 13),
         (7, 4, 13),
     ]
-    return np.array(faces)
+    return faces
