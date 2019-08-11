@@ -1,0 +1,6 @@
+newmtl block
+Kd 0.888 0.888 0.888
+
+newmtl water
+Kd 0.200 0.733 0.869
+

@@ -85,18 +85,34 @@ def scale(v):
 
 def refrection_xz_plane():
     return np.array((
-        (1, 0, 0, 0),
-        (0,-1, 0, 0),
-        (0, 0, 1, 0),
-        (0, 0, 0, 1),
+        ( 1, 0, 0, 0),
+        ( 0,-1, 0, 0),
+        ( 0, 0, 1, 0),
+        ( 0, 0, 0, 1),
+    ))
+
+def refrection_yz_plane():
+    return np.array((
+        (-1, 0, 0, 0),
+        ( 0, 1, 0, 0),
+        ( 0, 0, 1, 0),
+        ( 0, 0, 0, 1),
     ))
 
 def refrection_x_eq_y_plane():
     return np.array((
-        (0, 1, 0, 0),
-        (1, 0, 0, 0),
-        (0, 0, 1, 0),
-        (0, 0, 0, 1),
+        ( 0, 1, 0, 0),
+        ( 1, 0, 0, 0),
+        ( 0, 0, 1, 0),
+        ( 0, 0, 0, 1),
+    ))
+
+def refrection_z_axis():
+    return np.array((
+        (-1, 0, 0, 0),
+        ( 0,-1, 0, 0),
+        ( 0, 0, 1, 0),
+        ( 0, 0, 0, 1),
     ))
 
 unit = np.array((
@@ -207,3 +223,16 @@ def faces_to_edges(faces):
                 edges.append(i12)
     return edges
 
+def calc_rotate_z(v):
+    x = v[0]
+    y = v[1]
+    if x > 0 and y == 0:
+        return rotate_z90d[0]
+    if x == 0 and y > 0:
+        return rotate_z90d[1]
+    if x < 0 and y == 0:
+        return rotate_z90d[2]
+    if x == 0 and y < 0:
+        return rotate_z90d[3]
+    rad = np.arctan2(y, x)
+    return rotate_z(rad)

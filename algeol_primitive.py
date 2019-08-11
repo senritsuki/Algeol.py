@@ -300,8 +300,8 @@ def prism_verts(polygon_verts, fn_refrection=None):
 
 def prism_faces(polygon_verts, polygon_faces, fn_refrection=None):
     N = len(polygon_verts)
-    faces1 = list(polygon_faces)
-    faces2 = list(polygon_faces + N)
+    faces1 = [(f[0],   f[2],   f[1]  ) for f in polygon_faces]
+    faces2 = [(f[0]+N, f[1]+N, f[2]+N) for f in polygon_faces]
     faces_side = []
     for i in range(N):
         j = (i + 1) % N
@@ -431,3 +431,56 @@ def concaved_cube_faces():
         (7, 4, 13),
     ]
     return faces
+
+def rotate_z_verts(affines, z1, vv, z2):
+    verts = []
+    verts.append((0, 0, z1, 1))
+    for v in vv:
+        for affine in affines:
+            verts.append(np.dot(affine, v))
+    verts.append((0, 0, z2, 1))
+    return np.array(verts)
+
+def rotate_z_faces(affines, vv):
+    I = len(vv)
+    J = len(affines)
+    faces = []
+    i = 1
+    for j in range(J):
+        j2 = (j + 1) % J
+        faces.append((0, i+j, i+j2))
+    for k in range(I-1):
+        i = k * J + 1
+        i2 = i + J
+        for j in range(J):
+            j2 = (j + 1) % J
+            faces.append((i+j, i+j2, i2+j2, i2+j))
+    i = (I - 1) * J + 1
+    i2 = i + J
+    for j in range(J):
+        j2 = (j + 1) % J
+        faces.append((i+j, i+j2, i2))
+    return faces
+
+def refrection_xy(z1, verts, z2):
+    affines = (
+        unit,
+        refrection_yz_plane(),
+        refrection_z_axis(),
+        refrection_xz_plane(),
+    )
+    return rotate_z_verts(affines, z1, verts, z2), rotate_z_faces(affines, verts)
+
+def rotation_z(n, z1, verts, z2):
+    affines = [rotate_z(PI2 * i / n) for i in range(n)]
+    return rotate_z_verts(affines, z1, verts, z2), rotate_z_faces(affines, verts)
+
+def roundcube(n):
+    return roundcube_verts(n), roundcube_faces(n)
+
+def roundcube_verts(n):
+    pass
+
+def roundcube_faces(n):
+    pass
+
